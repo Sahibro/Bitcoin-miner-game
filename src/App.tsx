@@ -2,25 +2,24 @@ import React, { useState, useEffect } from 'react';
 import { INITIAL_UPGRADES } from './constants';
 import { useGameLoop } from './hooks/useGameLoop';
 import { Upgrade } from './types';
-import { motion, AnimatePresence } from 'framer-motion'; // Animation library
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function App() {
   const [balance, setBalance] = useState(0);
   const [upgrades, setUpgrades] = useState<Upgrade[]>(INITIAL_UPGRADES);
   const [clicks, setClicks] = useState<{id: number, x: number, y: number, val: number}[]>([]);
 
-  // Income logic
+  // Calculate Income
   const incomePerSecond = upgrades.reduce((acc, curr) => acc + (curr.income * curr.count), 0);
 
   useGameLoop(() => {
     setBalance(prev => prev + incomePerSecond);
   }, 1000);
 
-  // Advanced Click Handler (Floating Text)
   const handleClick = (e: React.MouseEvent | React.TouchEvent) => {
     setBalance(prev => prev + 1);
-
-    // Coordinate logic for Mobile & PC
+    
+    // Get Coordinates
     let clientX, clientY;
     if ('touches' in e) {
       clientX = e.touches[0].clientX;
@@ -30,103 +29,150 @@ export default function App() {
       clientY = (e as React.MouseEvent).clientY;
     }
 
-    // Add visual effect
     const newClick = { id: Date.now(), x: clientX, y: clientY, val: 1 };
     setClicks(prev => [...prev, newClick]);
-
-    // Cleanup floating text after 1 second
-    setTimeout(() => {
-      setClicks(prev => prev.filter(c => c.id !== newClick.id));
-    }, 1000);
+    setTimeout(() => setClicks(prev => prev.filter(c => c.id !== newClick.id)), 1000);
   };
 
   const buyUpgrade = (id: number) => {
     const upgradeIndex = upgrades.findIndex(u => u.id === id);
     const upgrade = upgrades[upgradeIndex];
+
     if (balance >= upgrade.cost) {
       setBalance(prev => prev - upgrade.cost);
       const newUpgrades = [...upgrades];
-      newUpgrades[upgradeIndex] = { ...upgrade, count: upgrade.count + 1, cost: Math.round(upgrade.cost * 1.15) };
+      newUpgrades[upgradeIndex] = {
+        ...upgrade,
+        count: upgrade.count + 1,
+        cost: Math.round(upgrade.cost * 1.15)
+      };
       setUpgrades(newUpgrades);
     }
   };
 
   return (
-    <div className="h-screen w-screen text-white flex flex-col md:flex-row overflow-hidden relative">
+    <div className="h-screen w-screen bg-gray-900 text-white flex flex-col md:flex-row overflow-hidden relative selection:bg-none">
       
-      {/* Background Glow Effect */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(245,158,11,0.1),transparent_70%)] pointer-events-none"></div>
+      {/* Background with Dark Aura */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,#2d3748,black)] pointer-events-none z-0"></div>
+      
+      {/* Floating Numbers */}
+      <AnimatePresence>
+        {clicks.map(c => (
+          <motion.div
+            key={c.id}
+            initial={{ opacity: 1, y: 0, scale: 0.5 }}
+            animate={{ opacity: 0, y: -150, scale: 2 }}
+            exit={{ opacity: 0 }}
+            className="absolute text-4xl font-bold text-yellow-400 pointer-events-none z-50 drop-shadow-[0_0_5px_rgba(255,215,0,0.8)]"
+            style={{ left: c.x - 20, top: c.y - 50 }}
+          >
+            +{c.val}
+          </motion.div>
+        ))}
+      </AnimatePresence>
 
-      {/* Floating Numbers Container */}
-      {clicks.map(c => (
-        <div key={c.id} className="float-text text-yellow-400" style={{ left: c.x, top: c.y }}>
-          +{c.val}
-        </div>
-      ))}
-
-      {/* MINING SECTION */}
-      <div className="flex-1 flex flex-col items-center justify-center p-4 z-10 relative">
-        <h1 className="text-3xl md:text-5xl font-black mb-2 text-transparent bg-clip-text bg-gradient-to-b from-yellow-300 to-yellow-600 drop-shadow-sm">
-          CRYPTO CLICKER
-        </h1>
+      {/* LEFT SIDE: MINER */}
+      <div className="flex-1 flex flex-col items-center justify-center p-4 z-10 relative mt-8 md:mt-0">
         
-        {/* Balance Display with Neon Glow */}
-        <div className="text-4xl md:text-6xl font-mono text-yellow-400 font-bold drop-shadow-[0_0_15px_rgba(250,204,21,0.5)] mb-8">
-          {balance.toFixed(1)} <span className="text-xl text-gray-400">BTC</span>
+        {/* Balance Header */}
+        <div className="flex flex-col items-center mb-8">
+           <h1 className="text-gray-500 text-xs uppercase tracking-[0.3em] mb-2 font-bold">Encrypted Wallet</h1>
+           <div className="text-5xl md:text-7xl font-mono font-bold text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-400 drop-shadow-sm">
+             {balance.toFixed(0)} <span className="text-yellow-500 text-3xl align-top">BTC</span>
+           </div>
         </div>
 
-        {/* The BITCOIN BUTTON */}
+        {/* 3D SVG BITCOIN (NO COPYRIGHT ISSUE) */}
         <motion.div 
           whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95, rotate: 5 }}
-          className="cursor-pointer relative group"
+          whileTap={{ scale: 0.95, rotate: 10 }}
+          className="cursor-pointer relative z-20 group"
           onClick={handleClick}
-          // Also support mobile tap
         >
-           {/* Outer Glow Ring */}
-          <div className="absolute -inset-4 bg-yellow-500 rounded-full opacity-20 group-hover:opacity-40 blur-xl transition-all duration-300"></div>
+          {/* Glowing Effect behind */}
+          <div className="absolute inset-0 bg-yellow-600 blur-[60px] opacity-20 group-hover:opacity-40 transition-opacity rounded-full"></div>
           
-          <div className="w-64 h-64 md:w-80 md:h-80 bg-gradient-to-b from-yellow-400 to-orange-600 rounded-full flex items-center justify-center border-4 border-yellow-200 shadow-2xl shadow-orange-900/50 z-20 relative">
-            <span className="text-8xl md:text-9xl font-bold text-white drop-shadow-md">₿</span>
-          </div>
+          {/* The SVG Code - This draws the coin directly */}
+          <svg viewBox="0 0 200 200" className="w-64 h-64 md:w-80 md:h-80 drop-shadow-2xl">
+            <defs>
+              <linearGradient id="coinGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style={{stopColor:"#fcd34d", stopOpacity:1}} />
+                <stop offset="100%" style={{stopColor:"#d97706", stopOpacity:1}} />
+              </linearGradient>
+              <linearGradient id="edgeGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" style={{stopColor:"#fbbf24", stopOpacity:1}} />
+                <stop offset="100%" style={{stopColor:"#b45309", stopOpacity:1}} />
+              </linearGradient>
+            </defs>
+            
+            {/* Outer Coin Body */}
+            <circle cx="100" cy="100" r="95" fill="url(#edgeGrad)" />
+            <circle cx="100" cy="100" r="88" fill="url(#coinGrad)" stroke="#b45309" strokeWidth="2" />
+            <circle cx="100" cy="100" r="70" fill="none" stroke="#fef3c7" strokeWidth="1" opacity="0.5" />
+            
+            {/* The 'B' Symbol */}
+            <text x="50%" y="50%" dominantBaseline="middle" textAnchor="middle" fill="white" fontSize="120" fontWeight="bold" fontFamily="Arial" style={{filter: 'drop-shadow(2px 2px 0px rgba(180, 83, 9, 1))'}}>
+              ₿
+            </text>
+            
+            {/* Shine effect */}
+            <ellipse cx="60" cy="60" rx="30" ry="15" fill="white" opacity="0.3" transform="rotate(-45 60 60)" />
+          </svg>
         </motion.div>
 
-        <div className="mt-8 text-gray-400 font-mono bg-gray-800/50 px-4 py-2 rounded-full border border-gray-700">
-          ⛏️ Speed: <span className="text-green-400">{incomePerSecond.toFixed(1)}</span> / sec
+        {/* Mining Speed Indicator */}
+        <div className="mt-12 flex flex-col items-center">
+          <div className="text-gray-400 text-xs tracking-widest mb-1">CURRENT HASHRATE</div>
+          <div className="bg-gray-800/80 backdrop-blur border border-green-500/30 px-6 py-2 rounded-xl flex items-center gap-3 shadow-[0_0_15px_rgba(34,197,94,0.1)]">
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-ping"></div>
+            <span className="font-mono text-green-400 font-bold text-lg">{incomePerSecond.toFixed(1)} /s</span>
+          </div>
         </div>
       </div>
 
-      {/* SHOP SECTION (Glassmorphism) */}
-      <div className="flex-1 bg-gray-900/80 backdrop-blur-md border-t md:border-l border-gray-700 p-4 overflow-y-auto h-[40vh] md:h-screen z-10">
-        <h2 className="text-2xl font-bold mb-4 sticky top-0 bg-gray-900/90 p-2 z-20 border-b border-gray-700">
-          Dark Web Market 🛒
-        </h2>
-        <div className="space-y-3 pb-20">
-          {upgrades.map(upgrade => (
-            <div
-              key={upgrade.id}
-              onClick={() => buyUpgrade(upgrade.id)}
-              className={`w-full p-4 rounded-xl border flex items-center justify-between transition-all select-none transform active:scale-95 ${
-                balance >= upgrade.cost 
-                  ? 'bg-gray-800 border-gray-600 hover:bg-gray-700 hover:border-yellow-500 cursor-pointer shadow-lg' 
-                  : 'bg-gray-900/50 border-gray-800 opacity-50 cursor-not-allowed'
-              }`}
-            >
-              <div className="flex items-center gap-4">
-                <div className="text-4xl bg-gray-700 p-2 rounded-lg">{upgrade.icon}</div>
-                <div>
-                  <div className="font-bold text-lg text-white">{upgrade.name}</div>
-                  <div className="text-xs text-green-400 font-mono">+{upgrade.income} BTC/s</div>
+      {/* RIGHT SIDE: SHOP */}
+      <div className="flex-1 md:h-screen md:max-w-md bg-gray-900 border-t md:border-l border-gray-800 flex flex-col z-30 shadow-xl">
+        <div className="p-6 bg-gray-900 border-b border-gray-800 flex justify-between items-center sticky top-0 z-40">
+          <h2 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">
+            MARKETPLACE
+          </h2>
+          <span className="text-xs font-mono text-gray-500">{upgrades.reduce((a,c)=>a+c.count,0)} ITEMS OWNED</span>
+        </div>
+
+        {/* Scrollable Shop List */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-3 pb-32 md:pb-10 custom-scrollbar">
+          {upgrades.map(upgrade => {
+            const canBuy = balance >= upgrade.cost;
+            return (
+              <button
+                key={upgrade.id}
+                onClick={() => buyUpgrade(upgrade.id)}
+                disabled={!canBuy}
+                className={`w-full p-4 rounded-xl border flex items-center justify-between relative overflow-hidden transition-all duration-100 group ${
+                  canBuy 
+                    ? 'bg-gray-800 border-gray-700 hover:border-yellow-500/50 hover:bg-gray-800 active:scale-[0.98]' 
+                    : 'bg-gray-900/50 border-gray-800 opacity-40 cursor-not-allowed'
+                }`}
+              >
+                <div className="flex items-center gap-4 z-10">
+                  <div className={`text-3xl p-3 rounded-lg ${canBuy ? 'bg-gray-700' : 'bg-gray-800'}`}>
+                    {upgrade.icon}
+                  </div>
+                  <div className="text-left">
+                    <div className="font-bold text-gray-200">{upgrade.name}</div>
+                    <div className="text-xs font-mono text-green-400">+{upgrade.income} BTC/s</div>
+                  </div>
                 </div>
-              </div>
-              <div className="text-right">
-                <div className={`text-lg font-bold font-mono ${balance >= upgrade.cost ? 'text-yellow-400' : 'text-red-400'}`}>
-                  {upgrade.cost.toLocaleString()}
+
+                <div className="text-right z-10">
+                  <div className={`font-bold font-mono text-lg ${canBuy ? 'text-yellow-400' : 'text-gray-500'}`}>
+                    {upgrade.cost.toLocaleString()}
+                  </div>
                 </div>
-                <div className="text-xs text-gray-500">Qty: {upgrade.count}</div>
-              </div>
-            </div>
-          ))}
+              </button>
+            )
+          })}
         </div>
       </div>
     </div>
