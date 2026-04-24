@@ -2730,7 +2730,7 @@ const UIDashboard = {
       tbody.innerHTML = `
         <tr>
           <td colspan="8" style="text-align:center; padding:2rem; color:var(--color-text-muted);">
-                      </td>
+            </td>
         </tr>
       `;
       return;
