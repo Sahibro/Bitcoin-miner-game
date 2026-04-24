@@ -2730,6 +2730,7 @@ const UIDashboard = {
       tbody.innerHTML = `
         <tr>
           <td colspan="8" style="text-align:center; padding:2rem; color:var(--color-text-muted);">
+            No recommendations yet. Upload data and compute recommendations.          
             </td>
         </tr>
       `;
@@ -5088,4 +5089,3 @@ if (document.readyState === "loading") {
 } else {
   App.init();
 }
-            
