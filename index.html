@@ -1,12 +1,1515 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Bitcoin Miner</title>
-  </head>
-  <body class="bg-gray-900 text-white select-none">
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>SupplyChain SafeStock AI — Intelligent Safety Stock Optimization</title>
+  <meta name="description" content="Enterprise-grade safety stock optimization platform with AI-driven demand forecasting, real-time risk signals, multi-location rebalancing, and ERP integration.">
+  <meta name="keywords" content="safety stock, inventory optimization, supply chain, demand forecasting, ERP integration">
+  <meta name="author" content="SafeStock AI">
+  <meta name="robots" content="index, follow">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="SupplyChain SafeStock AI">
+  <meta property="og:description" content="Intelligent Safety Stock Optimization Platform">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://safestock.ai">
+  <meta property="og:image" content="https://safestock.ai/og-image.png">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="SupplyChain SafeStock AI">
+  <meta name="twitter:description" content="Intelligent Safety Stock Optimization Platform">
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0F172A">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer">
+
+  <!-- Chart.js -->
+  <link rel="preload" href="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" as="script">
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-theme="dark">
+
+  <!-- ============================================ -->
+  <!-- LOADING SCREEN -->
+  <!-- ============================================ -->
+  <div id="loadingScreen" class="loading-screen" role="status" aria-label="Loading application">
+    <div class="loading-content">
+      <div class="loading-logo">
+        <div class="loading-icon">
+          <i class="fas fa-boxes-stacked"></i>
+        </div>
+        <div class="loading-pulse"></div>
+      </div>
+      <h2 class="loading-title">SupplyChain SafeStock AI</h2>
+      <p class="loading-subtitle">Initializing Optimization Engine...</p>
+      <div class="loading-bar-track">
+        <div class="loading-bar-fill" id="loadingBarFill"></div>
+      </div>
+      <p class="loading-percent" id="loadingPercent">0%</p>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- ONBOARDING TOUR OVERLAY -->
+  <!-- ============================================ -->
+  <div id="onboardingOverlay" class="onboarding-overlay hidden" role="dialog" aria-modal="true" aria-label="Welcome tour">
+    <div class="onboarding-card">
+      <div class="onboarding-step-indicator" id="onboardingStepIndicator"></div>
+      <div class="onboarding-body" id="onboardingBody">
+        <!-- Dynamic content -->
+      </div>
+      <div class="onboarding-footer">
+        <button type="button" class="btn btn-ghost" id="onboardingSkip" aria-label="Skip tour">Skip Tour</button>
+        <div class="onboarding-nav">
+          <button type="button" class="btn btn-secondary" id="onboardingPrev" aria-label="Previous step" disabled>
+            <i class="fas fa-arrow-left"></i> Back
+          </button>
+          <button type="button" class="btn btn-primary" id="onboardingNext" aria-label="Next step">
+            Next <i class="fas fa-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <!-- ============================================ -->
+  <div id="toastContainer" class="toast-container" role="log" aria-live="polite" aria-label="Notifications"></div>
+
+  <!-- ============================================ -->
+  <!-- MAIN APPLICATION WRAPPER -->
+  <!-- ============================================ -->
+  <div id="appWrapper" class="app-wrapper hidden">
+
+    <!-- ======================================== -->
+    <!-- SIDEBAR NAVIGATION -->
+    <!-- ======================================== -->
+    <aside id="sidebar" class="sidebar" role="navigation" aria-label="Main navigation">
+      <div class="sidebar-header">
+        <div class="sidebar-brand">
+          <div class="brand-icon">
+            <i class="fas fa-boxes-stacked"></i>
+          </div>
+          <div class="brand-text">
+            <span class="brand-name">SafeStock</span>
+            <span class="brand-tag">AI Engine</span>
+          </div>
+        </div>
+        <button type="button" class="sidebar-collapse-btn" id="sidebarCollapseBtn" aria-label="Toggle sidebar">
+          <i class="fas fa-angles-left"></i>
+        </button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <ul class="nav-list" role="menubar">
+          <li class="nav-section-label">Main</li>
+          <li class="nav-item active" role="none">
+            <a href="#dashboard" class="nav-link" role="menuitem" data-page="dashboard" data-tooltip="Dashboard">
+              <i class="fas fa-gauge-high nav-icon"></i>
+              <span class="nav-text">Dashboard</span>
+            </a>
+          </li>
+          <li class="nav-item" role="none">
+            <a href="#upload" class="nav-link" role="menuitem" data-page="upload" data-tooltip="Data Upload">
+              <i class="fas fa-cloud-arrow-up nav-icon"></i>
+              <span class="nav-text">Data Upload</span>
+            </a>
+          </li>
+          <li class="nav-item" role="none">
+            <a href="#signals" class="nav-link" role="menuitem" data-page="signals" data-tooltip="Risk Signals">
+              <i class="fas fa-satellite-dish nav-icon"></i>
+              <span class="nav-text">Risk Signals</span>
+            </a>
+          </li>
+
+          <li class="nav-section-label">Analytics</li>
+          <li class="nav-item" role="none">
+            <a href="#forecast" class="nav-link" role="menuitem" data-page="forecast" data-tooltip="Demand Forecast">
+              <i class="fas fa-chart-line nav-icon"></i>
+              <span class="nav-text">Demand Forecast</span>
+            </a>
+          </li>
+          <li class="nav-item" role="none">
+            <a href="#recommendations" class="nav-link" role="menuitem" data-page="recommendations" data-tooltip="Recommendations">
+              <i class="fas fa-clipboard-check nav-icon"></i>
+              <span class="nav-text">Recommendations</span>
+            </a>
+          </li>
+          <li class="nav-item" role="none">
+            <a href="#simulator" class="nav-link" role="menuitem" data-page="simulator" data-tooltip="What-If Simulator">
+              <i class="fas fa-sliders nav-icon"></i>
+              <span class="nav-text">What-If Simulator</span>
+            </a>
+          </li>
+
+          <li class="nav-section-label">Operations</li>
+          <li class="nav-item" role="none">
+            <a href="#rebalancer" class="nav-link" role="menuitem" data-page="rebalancer" data-tooltip="Multi-Location">
+              <i class="fas fa-arrows-split-up-and-left nav-icon"></i>
+              <span class="nav-text">Multi-Location</span>
+            </a>
+          </li>
+          <li class="nav-item" role="none">
+            <a href="#erp" class="nav-link" role="menuitem" data-page="erp" data-tooltip="ERP Integration">
+              <i class="fas fa-plug nav-icon"></i>
+              <span class="nav-text">ERP Integration</span>
+            </a>
+          </li>
+          <li class="nav-item" role="none">
+            <a href="#audit" class="nav-link" role="menuitem" data-page="audit" data-tooltip="Audit Trail">
+              <i class="fas fa-scroll nav-icon"></i>
+              <span class="nav-text">Audit Trail</span>
+            </a>
+          </li>
+          <li class="nav-item" role="none">
+            <a href="#alerts" class="nav-link" role="menuitem" data-page="alerts" data-tooltip="Alerts">
+              <i class="fas fa-bell nav-icon"></i>
+              <span class="nav-text">Alerts</span>
+              <span class="nav-badge" id="alertBadge">3</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-footer-item">
+          <button type="button" class="nav-link" id="settingsBtn" data-tooltip="Settings" aria-label="Open settings">
+            <i class="fas fa-gear nav-icon"></i>
+            <span class="nav-text">Settings</span>
+          </button>
+        </div>
+        <div class="sidebar-footer-item">
+          <button type="button" class="nav-link" id="helpBtn" data-tooltip="Help" aria-label="Open help">
+            <i class="fas fa-circle-question nav-icon"></i>
+            <span class="nav-text">Help</span>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ======================================== -->
+    <!-- MAIN CONTENT AREA -->
+    <!-- ======================================== -->
+    <main class="main-content" id="mainContent" role="main">
+
+      <!-- TOP HEADER BAR -->
+      <header class="top-bar" role="banner">
+        <div class="top-bar-left">
+          <button type="button" class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Open menu">
+            <i class="fas fa-bars"></i>
+          </button>
+          <div class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb">
+            <span class="breadcrumb-item"><i class="fas fa-home"></i></span>
+            <span class="breadcrumb-sep"><i class="fas fa-chevron-right"></i></span>
+            <span class="breadcrumb-item active" id="breadcrumbCurrent">Dashboard</span>
+          </div>
+        </div>
+        <div class="top-bar-right">
+          <div class="search-box" role="search">
+            <i class="fas fa-search search-icon"></i>
+            <input type="search" id="globalSearch" class="search-input" placeholder="Search SKUs, locations..." aria-label="Global search" autocomplete="off">
+            <kbd class="search-shortcut">Ctrl+K</kbd>
+          </div>
+          <button type="button" class="top-bar-btn" id="themeToggle" aria-label="Toggle dark/light theme">
+            <i class="fas fa-moon" id="themeIcon"></i>
+          </button>
+          <button type="button" class="top-bar-btn" id="fullscreenBtn" aria-label="Toggle fullscreen">
+            <i class="fas fa-expand"></i>
+          </button>
+          <button type="button" class="top-bar-btn notification-btn" id="notificationBtn" aria-label="Notifications">
+            <i class="fas fa-bell"></i>
+            <span class="notification-dot" id="notificationDot"></span>
+          </button>
+          <div class="user-avatar" id="userAvatar" aria-label="User menu" tabindex="0" role="button">
+            <span class="avatar-initials">SC</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- PAGE CONTAINER -->
+      <div class="page-container" id="pageContainer">
+
+        <!-- ============================== -->
+        <!-- PAGE: DASHBOARD -->
+        <!-- ============================== -->
+        <section class="page active" id="page-dashboard" data-page="dashboard" aria-label="Dashboard overview">
+
+          <!-- KPI Cards Row -->
+          <div class="kpi-row">
+            <div class="kpi-card" data-aos="fade-up">
+              <div class="kpi-icon kpi-icon--blue">
+                <i class="fas fa-boxes-stacked"></i>
+              </div>
+              <div class="kpi-body">
+                <p class="kpi-label">Total SKUs Tracked</p>
+                <h3 class="kpi-value" id="kpiTotalSkus">0</h3>
+                <p class="kpi-change positive"><i class="fas fa-arrow-up"></i> <span id="kpiSkuChange">+12</span> this week</p>
+              </div>
+            </div>
+            <div class="kpi-card" data-aos="fade-up" data-aos-delay="100">
+              <div class="kpi-icon kpi-icon--green">
+                <i class="fas fa-shield-halved"></i>
+              </div>
+              <div class="kpi-body">
+                <p class="kpi-label">Avg Service Level</p>
+                <h3 class="kpi-value" id="kpiServiceLevel">0%</h3>
+                <p class="kpi-change positive"><i class="fas fa-arrow-up"></i> <span id="kpiSLChange">+2.1%</span></p>
+              </div>
+            </div>
+            <div class="kpi-card" data-aos="fade-up" data-aos-delay="200">
+              <div class="kpi-icon kpi-icon--amber">
+                <i class="fas fa-triangle-exclamation"></i>
+              </div>
+              <div class="kpi-body">
+                <p class="kpi-label">At-Risk SKUs</p>
+                <h3 class="kpi-value" id="kpiAtRisk">0</h3>
+                <p class="kpi-change negative"><i class="fas fa-arrow-up"></i> <span id="kpiRiskChange">+5</span></p>
+              </div>
+            </div>
+            <div class="kpi-card" data-aos="fade-up" data-aos-delay="300">
+              <div class="kpi-icon kpi-icon--purple">
+                <i class="fas fa-coins"></i>
+              </div>
+              <div class="kpi-body">
+                <p class="kpi-label">Working Capital Saved</p>
+                <h3 class="kpi-value" id="kpiCapitalSaved">$0</h3>
+                <p class="kpi-change positive"><i class="fas fa-arrow-down"></i> <span id="kpiCapChange">-8.3%</span> inventory cost</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Charts Row -->
+          <div class="grid-2col">
+            <div class="card" data-aos="fade-up" data-aos-delay="100">
+              <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-chart-area"></i> Demand vs Forecast (30 Days)</h3>
+                <div class="card-actions">
+                  <select id="dashForecastSku" class="select-sm" aria-label="Select SKU for forecast chart">
+                    <option value="all">All SKUs (Aggregated)</option>
+                  </select>
+                  <button type="button" class="btn-icon" aria-label="Refresh chart" id="refreshForecastChart">
+                    <i class="fas fa-rotate"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="chart-container">
+                  <canvas id="forecastChart" aria-label="Demand vs Forecast line chart"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <div class="card" data-aos="fade-up" data-aos-delay="200">
+              <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-chart-pie"></i> Inventory Distribution</h3>
+                <div class="card-actions">
+                  <button type="button" class="btn-icon" aria-label="Refresh distribution chart" id="refreshDistChart">
+                    <i class="fas fa-rotate"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="chart-container chart-container--doughnut">
+                  <canvas id="inventoryDistChart" aria-label="Inventory distribution doughnut chart"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Map + Risk Signals Row -->
+          <div class="grid-2col">
+            <div class="card card--map" data-aos="fade-up" data-aos-delay="100">
+              <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-earth-americas"></i> Global Port Status</h3>
+                <div class="card-actions">
+                  <span class="status-dot status-dot--live"></span>
+                  <span class="status-text">Live</span>
+                </div>
+              </div>
+              <div class="card-body card-body--map">
+                <div id="globalMap" class="map-container" aria-label="Global port congestion map"></div>
+              </div>
+            </div>
+
+            <div class="card" data-aos="fade-up" data-aos-delay="200">
+              <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-signal"></i> Risk Signal Feed</h3>
+                <div class="card-actions">
+                  <button type="button" class="btn-icon" id="refreshSignals" aria-label="Refresh signals">
+                    <i class="fas fa-rotate"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="signal-feed" id="signalFeed" role="list" aria-label="Real-time risk signals">
+                  <!-- Dynamic signal items -->
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Recommendations Preview -->
+          <div class="card" data-aos="fade-up">
+            <div class="card-header">
+              <h3 class="card-title"><i class="fas fa-clipboard-check"></i> Latest Recommendations</h3>
+              <div class="card-actions">
+                <a href="#recommendations" class="btn btn-sm btn-ghost" data-page="recommendations">View All <i class="fas fa-arrow-right"></i></a>
+              </div>
+            </div>
+            <div class="card-body card-body--table">
+              <div class="table-responsive">
+                <table class="data-table" id="dashRecommendationsTable" aria-label="Latest safety stock recommendations">
+                  <thead>
+                    <tr>
+                      <th scope="col">SKU</th>
+                      <th scope="col">Location</th>
+                      <th scope="col">Current SS</th>
+                      <th scope="col">Recommended SS</th>
+                      <th scope="col">Δ Change</th>
+                      <th scope="col">Reason</th>
+                      <th scope="col">Confidence</th>
+                      <th scope="col">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dashRecTableBody">
+                    <!-- Dynamic rows -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================== -->
+        <!-- PAGE: DATA UPLOAD -->
+        <!-- ============================== -->
+        <section class="page" id="page-upload" data-page="upload" aria-label="Data upload and explorer">
+          <div class="page-header">
+            <h2 class="page-title"><i class="fas fa-cloud-arrow-up"></i> Data Upload &amp; Explorer</h2>
+            <p class="page-subtitle">Upload historical demand CSV, preview data, and review quality flags</p>
+          </div>
+
+          <div class="grid-2col">
+            <!-- Upload Zone -->
+            <div class="card" data-aos="fade-up">
+              <div class="card-header">
+                <h3 class="card-title">Upload Demand Data</h3>
+              </div>
+              <div class="card-body">
+                <div class="upload-zone" id="uploadZone" role="button" tabindex="0" aria-label="Click or drag CSV file to upload">
+                  <div class="upload-zone-content">
+                    <div class="upload-icon">
+                      <i class="fas fa-cloud-arrow-up"></i>
+                    </div>
+                    <h4 class="upload-title">Drop your CSV file here</h4>
+                    <p class="upload-subtitle">or click to browse files</p>
+                    <p class="upload-hint">Supported: .csv | Max size: 10MB</p>
+                    <p class="upload-hint">Required columns: <code>date</code>, <code>sku</code>, <code>quantity</code></p>
+                  </div>
+                  <input type="file" id="csvFileInput" class="upload-input" accept=".csv" aria-hidden="true">
+                </div>
+                <div class="upload-progress hidden" id="uploadProgress">
+                  <div class="progress-bar-track">
+                    <div class="progress-bar-fill" id="uploadProgressFill"></div>
+                  </div>
+                  <p class="progress-text" id="uploadProgressText">Uploading...</p>
+                </div>
+                <!-- Sample Data Button -->
+                <div class="upload-actions">
+                  <button type="button" class="btn btn-secondary btn-sm" id="loadSampleDataBtn">
+                    <i class="fas fa-flask"></i> Load Sample Data
+                  </button>
+                  <button type="button" class="btn btn-ghost btn-sm" id="downloadTemplateBtn">
+                    <i class="fas fa-download"></i> Download Template
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Data Quality Summary -->
+            <div class="card" data-aos="fade-up" data-aos-delay="100">
+              <div class="card-header">
+                <h3 class="card-title">Data Quality Report</h3>
+              </div>
+              <div class="card-body" id="dataQualityBody">
+                <div class="empty-state" id="qualityEmptyState">
+                  <div class="empty-icon"><i class="fas fa-clipboard-question"></i></div>
+                  <h4>No Data Uploaded Yet</h4>
+                  <p>Upload a CSV file to see data quality analysis</p>
+                </div>
+                <div class="quality-report hidden" id="qualityReport">
+                  <div class="quality-grid">
+                    <div class="quality-metric">
+                      <span class="quality-metric-label">Total Rows</span>
+                      <span class="quality-metric-value" id="qmTotalRows">0</span>
+                    </div>
+                    <div class="quality-metric">
+                      <span class="quality-metric-label">Unique SKUs</span>
+                      <span class="quality-metric-value" id="qmUniqueSkus">0</span>
+                    </div>
+                    <div class="quality-metric">
+                      <span class="quality-metric-label">Date Range</span>
+                      <span class="quality-metric-value" id="qmDateRange">—</span>
+                    </div>
+                    <div class="quality-metric">
+                      <span class="quality-metric-label">Missing Values</span>
+                      <span class="quality-metric-value" id="qmMissing">0</span>
+                    </div>
+                    <div class="quality-metric">
+                      <span class="quality-metric-label">Outliers Detected</span>
+                      <span class="quality-metric-value" id="qmOutliers">0</span>
+                    </div>
+                    <div class="quality-metric">
+                      <span class="quality-metric-label">Completeness</span>
+                      <span class="quality-metric-value" id="qmCompleteness">0%</span>
+                    </div>
+                  </div>
+                  <div class="quality-flags" id="qualityFlags">
+                    <!-- Dynamic flags -->
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Data Preview Table -->
+          <div class="card" data-aos="fade-up">
+            <div class="card-header">
+              <h3 class="card-title">Data Preview</h3>
+              <div class="card-actions">
+                <input type="search" id="uploadSearchInput" class="search-input search-input--sm" placeholder="Filter by SKU..." aria-label="Filter uploaded data">
+                <span class="badge" id="previewRowCount">0 rows</span>
+              </div>
+            </div>
+            <div class="card-body card-body--table">
+              <div class="table-responsive" id="previewTableWrap">
+                <div class="empty-state" id="previewEmptyState">
+                  <div class="empty-icon"><i class="fas fa-table"></i></div>
+                  <h4>No Data to Preview</h4>
+                  <p>Upload a CSV or load sample data to see a preview</p>
+                </div>
+                <table class="data-table hidden" id="previewTable" aria-label="Uploaded data preview">
+                  <thead>
+                    <tr>
+                      <th scope="col">#</th>
+                      <th scope="col">Date</th>
+                      <th scope="col">SKU</th>
+                      <th scope="col">Quantity</th>
+                      <th scope="col">Location</th>
+                      <th scope="col">Flags</th>
+                    </tr>
+                  </thead>
+                  <tbody id="previewTableBody">
+                    <!-- Dynamic rows -->
+                  </tbody>
+                </table>
+              </div>
+              <div class="pagination hidden" id="previewPagination" aria-label="Data preview pagination">
+                <button type="button" class="btn btn-sm btn-ghost" id="prevPagePrev" aria-label="Previous page"><i class="fas fa-chevron-left"></i></button>
+                <span class="pagination-info" id="prevPageInfo">Page 1 of 1</span>
+                <button type="button" class="btn btn-sm btn-ghost" id="prevPageNext" aria-label="Next page"><i class="fas fa-chevron-right"></i></button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================== -->
+        <!-- PAGE: RISK SIGNALS -->
+        <!-- ============================== -->
+        <section class="page" id="page-signals" data-page="signals" aria-label="Real-time risk signals">
+          <div class="page-header">
+            <h2 class="page-title"><i class="fas fa-satellite-dish"></i> Real-Time Risk Signals</h2>
+            <p class="page-subtitle">Port congestion, geopolitical risk, and weather data — fused into lead time adjustments</p>
+          </div>
+
+          <!-- Signal KPIs -->
+          <div class="kpi-row kpi-row--3">
+            <div class="kpi-card" data-aos="fade-up">
+              <div class="kpi-icon kpi-icon--red">
+                <i class="fas fa-anchor"></i>
+              </div>
+              <div class="kpi-body">
+                <p class="kpi-label">Port Congestion Index</p>
+                <h3 class="kpi-value" id="kpiPortCongestion">0</h3>
+                <p class="kpi-sublabel">0–100 scale</p>
+              </div>
+            </div>
+            <div class="kpi-card" data-aos="fade-up" data-aos-delay="100">
+              <div class="kpi-icon kpi-icon--amber">
+                <i class="fas fa-globe"></i>
+              </div>
+              <div class="kpi-body">
+                <p class="kpi-label">Geopolitical Risk Score</p>
+                <h3 class="kpi-value" id="kpiGeoRisk">0</h3>
+                <p class="kpi-sublabel">0–100 scale</p>
+              </div>
+            </div>
+            <div class="kpi-card" data-aos="fade-up" data-aos-delay="200">
+              <div class="kpi-icon kpi-icon--blue">
+                <i class="fas fa-cloud-bolt"></i>
+              </div>
+              <div class="kpi-body">
+                <p class="kpi-label">Weather Disruption Level</p>
+                <h3 class="kpi-value" id="kpiWeather">0</h3>
+                <p class="kpi-sublabel">0–100 scale</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Signal Configuration + Fusion -->
+          <div class="grid-2col">
+            <div class="card" data-aos="fade-up">
+              <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-cogs"></i> Signal Fusion Configuration</h3>
+              </div>
+              <div class="card-body">
+                <div class="form-group">
+                  <label class="form-label" for="portWeight">Port Congestion Weight</label>
+                  <div class="slider-group">
+                    <input type="range" id="portWeight" class="range-slider" min="0" max="100" value="40" aria-label="Port congestion weight">
+                    <span class="slider-value" id="portWeightVal">0.40</span>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="geoWeight">Geopolitical Risk Weight</label>
+                  <div class="slider-group">
+                    <input type="range" id="geoWeight" class="range-slider" min="0" max="100" value="35" aria-label="Geopolitical risk weight">
+                    <span class="slider-value" id="geoWeightVal">0.35</span>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="weatherWeight">Weather Disruption Weight</label>
+                  <div class="slider-group">
+                    <input type="range" id="weatherWeight" class="range-slider" min="0" max="100" value="25" aria-label="Weather disruption weight">
+                    <span class="slider-value" id="weatherWeightVal">0.25</span>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <p class="form-hint" id="weightSumHint"><i class="fas fa-info-circle"></i> Weights will be auto-normalized to sum to 1.0</p>
+                </div>
+                <div class="fusion-result">
+                  <div class="fusion-label">Fused Lead Time Multiplier</div>
+                  <div class="fusion-value" id="fusedMultiplier">1.00×</div>
+                  <div class="fusion-bar-track">
+                    <div class="fusion-bar-fill" id="fusedBarFill"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Signal History Chart -->
+            <div class="card" data-aos="fade-up" data-aos-delay="100">
+              <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-chart-bar"></i> Signal History (7 Days)</h3>
+              </div>
+              <div class="card-body">
+                <div class="chart-container">
+                  <canvas id="signalHistoryChart" aria-label="Signal history bar chart"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Port Rules Config -->
+          <div class="card" data-aos="fade-up">
+            <div class="card-header">
+              <h3 class="card-title"><i class="fas fa-ruler-combined"></i> Port Congestion → Lead Time Rules</h3>
+            </div>
+            <div class="card-body card-body--table">
+              <div class="table-responsive">
+                <table class="data-table" id="portRulesTable" aria-label="Port congestion to lead time multiplier rules">
+                  <thead>
+                    <tr>
+                      <th scope="col">Congestion Range</th>
+                      <th scope="col">Multiplier (m_port)</th>
+                      <th scope="col">Description</th>
+                      <th scope="col">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="portRulesBody">
+                    <!-- Dynamic rows -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================== -->
+        <!-- PAGE: DEMAND FORECAST -->
+        <!-- ============================== -->
+        <section class="page" id="page-forecast" data-page="forecast" aria-label="Demand forecast">
+          <div class="page-header">
+            <h2 class="page-title"><i class="fas fa-chart-line"></i> Demand Forecast Engine</h2>
+            <p class="page-subtitle">Holt-Winters exponential smoothing with spike detection and anomaly alerts</p>
+          </div>
+
+          <div class="grid-2col">
+            <!-- Forecast Controls -->
+            <div class="card" data-aos="fade-up">
+              <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-cog"></i> Forecast Parameters</h3>
+              </div>
+              <div class="card-body">
+                <div class="form-group">
+                  <label class="form-label" for="forecastSku">Select SKU</label>
+                  <select id="forecastSku" class="form-select" aria-label="Select SKU for forecasting">
+                    <option value="">— Upload data first —</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="forecastHorizon">Forecast Horizon (Days)</label>
+                  <input type="number" id="forecastHorizon" class="form-input" min="1" max="90" value="30" aria-label="Forecast horizon in days">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="forecastAlpha">Alpha (Level Smoothing)</label>
+                  <div class="slider-group">
+                    <input type="range" id="forecastAlpha" class="range-slider" min="1" max="99" value="30" aria-label="Alpha smoothing parameter">
+                    <span class="slider-value" id="forecastAlphaVal">0.30</span>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="forecastBeta">Beta (Trend Smoothing)</label>
+                  <div class="slider-group">
+                    <input type="range" id="forecastBeta" class="range-slider" min="1" max="99" value="10" aria-label="Beta smoothing parameter">
+                    <span class="slider-value" id="forecastBetaVal">0.10</span>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="spikeThreshold">Spike Detection Threshold (σ)</label>
+                  <div class="slider-group">
+                    <input type="range" id="spikeThreshold" class="range-slider" min="10" max="50" value="25" aria-label="Spike detection threshold">
+                    <span class="slider-value" id="spikeThresholdVal">2.5</span>
+                  </div>
+                </div>
+                <button type="button" class="btn btn-primary btn-block" id="runForecastBtn" disabled>
+                  <i class="fas fa-play"></i> Run Forecast
+                </button>
+              </div>
+            </div>
+
+            <!-- Forecast Results -->
+            <div class="card" data-aos="fade-up" data-aos-delay="100">
+              <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-chart-area"></i> Forecast Result</h3>
+                <div class="card-actions">
+                  <button type="button" class="btn btn-sm btn-ghost" id="exportForecastBtn" disabled aria-label="Export forecast data">
+                    <i class="fas fa-download"></i> Export
+                  </button>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="chart-container" id="forecastResultChartWrap">
+                  <div class="empty-state" id="forecastEmptyState">
+                    <div class="empty-icon"><i class="fas fa-chart-line"></i></div>
+                    <h4>No Forecast Generated</h4>
+                    <p>Select a SKU and run the forecast engine</p>
+                  </div>
+                  <canvas id="forecastResultChart" class="hidden" aria-label="Forecast result chart"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Forecast Accuracy Metrics -->
+          <div class="card hidden" id="forecastMetricsCard" data-aos="fade-up">
+            <div class="card-header">
+              <h3 class="card-title"><i class="fas fa-bullseye"></i> Forecast Accuracy Metrics</h3>
+            </div>
+            <div class="card-body">
+              <div class="kpi-row kpi-row--4">
+                <div class="kpi-card kpi-card--compact">
+                  <p class="kpi-label">MAPE</p>
+                  <h3 class="kpi-value" id="metricMape">—</h3>
+                </div>
+                <div class="kpi-card kpi-card--compact">
+                  <p class="kpi-label">MAE</p>
+                  <h3 class="kpi-value" id="metricMae">—</h3>
+                </div>
+                <div class="kpi-card kpi-card--compact">
+                  <p class="kpi-label">RMSE</p>
+                  <h3 class="kpi-value" id="metricRmse">—</h3>
+                </div>
+                <div class="kpi-card kpi-card--compact">
+                  <p class="kpi-label">Spikes Detected</p>
+                  <h3 class="kpi-value" id="metricSpikes">—</h3>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================== -->
+        <!-- PAGE: RECOMMENDATIONS -->
+        <!-- ============================== -->
+        <section class="page" id="page-recommendations" data-page="recommendations" aria-label="Safety stock recommendations">
+          <div class="page-header">
+            <h2 class="page-title"><i class="fas fa-clipboard-check"></i> Safety Stock Recommendations</h2>
+            <p class="page-subtitle">AI-computed optimal safety stock levels with explainability</p>
+          </div>
+
+          <!-- Service Level Config -->
+          <div class="card" data-aos="fade-up">
+            <div class="card-header">
+              <h3 class="card-title"><i class="fas fa-sliders"></i> Optimization Parameters</h3>
+            </div>
+            <div class="card-body">
+              <div class="form-row">
+                <div class="form-group form-group--inline">
+                  <label class="form-label" for="targetServiceLevel">Target Service Level (%)</label>
+                  <select id="targetServiceLevel" class="form-select" aria-label="Target service level">
+                    <option value="90">90% (z=1.28)</option>
+                    <option value="95" selected>95% (z=1.65)</option>
+                    <option value="97">97% (z=1.88)</option>
+                    <option value="99">99% (z=2.33)</option>
+                    <option value="99.5">99.5% (z=2.58)</option>
+                  </select>
+                </div>
+                <div class="form-group form-group--inline">
+                  <label class="form-label" for="recLocation">Location</label>
+                  <select id="recLocation" class="form-select" aria-label="Select location">
+                    <option value="all">All Locations</option>
+                  </select>
+                </div>
+                <div class="form-group form-group--inline">
+                  <button type="button" class="btn btn-primary" id="computeRecommendationsBtn">
+                    <i class="fas fa-calculator"></i> Compute Recommendations
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recommendations Table -->
+          <div class="card" data-aos="fade-up">
+            <div class="card-header">
+              <h3 class="card-title"><i class="fas fa-table-list"></i> Recommendation Results</h3>
+              <div class="card-actions">
+                <input type="search" id="recSearchInput" class="search-input search-input--sm" placeholder="Search SKU..." aria-label="Search recommendations">
+                <button type="button" class="btn btn-sm btn-secondary" id="exportRecsBtn" aria-label="Export recommendations">
+                  <i class="fas fa-file-export"></i> Export CSV
+                </button>
+                <button type="button" class="btn btn-sm btn-primary" id="approveAllBtn" aria-label="Approve all recommendations">
+                  <i class="fas fa-check-double"></i> Approve All
+                </button>
+              </div>
+            </div>
+            <div class="card-body card-body--table">
+              <div class="table-responsive">
+                <div class="empty-state" id="recEmptyState">
+                  <div class="empty-icon"><i class="fas fa-clipboard-list"></i></div>
+                  <h4>No Recommendations Yet</h4>
+                  <p>Upload data and compute recommendations</p>
+                </div>
+                <table class="data-table hidden" id="recTable" aria-label="Safety stock recommendations">
+                  <thead>
+                    <tr>
+                      <th scope="col"><input type="checkbox" id="recSelectAll" aria-label="Select all"></th>
+                      <th scope="col" class="sortable" data-sort="sku">SKU <i class="fas fa-sort"></i></th>
+                      <th scope="col" class="sortable" data-sort="location">Location <i class="fas fa-sort"></i></th>
+                      <th scope="col" class="sortable" data-sort="currentSS">Current SS <i class="fas fa-sort"></i></th>
+                      <th scope="col" class="sortable" data-sort="recommendedSS">Recommended SS <i class="fas fa-sort"></i></th>
+                      <th scope="col" class="sortable" data-sort="delta">Δ Change <i class="fas fa-sort"></i></th>
+                      <th scope="col">μ_d</th>
+                      <th scope="col">σ_d</th>
+                      <th scope="col">L'</th>
+                      <th scope="col">σ_L'</th>
+                      <th scope="col">z'</th>
+                      <th scope="col">Reason</th>
+                      <th scope="col">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="recTableBody">
+                    <!-- Dynamic rows -->
+                  </tbody>
+                </table>
+              </div>
+              <div class="pagination hidden" id="recPagination" aria-label="Recommendations pagination">
+                <button type="button" class="btn btn-sm btn-ghost" id="recPagePrev" aria-label="Previous page"><i class="fas fa-chevron-left"></i></button>
+                <span class="pagination-info" id="recPageInfo">Page 1 of 1</span>
+                <button type="button" class="btn btn-sm btn-ghost" id="recPageNext" aria-label="Next page"><i class="fas fa-chevron-right"></i></button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Formula Explainer -->
+          <div class="card" data-aos="fade-up">
+            <div class="card-header">
+              <h3 class="card-title"><i class="fas fa-square-root-variable"></i> Safety Stock Formula</h3>
+            </div>
+            <div class="card-body">
+              <div class="formula-display">
+                <div class="formula-box">
+                  SS = z' &middot; &radic;( &sigma;<sub>d</sub>&sup2; &middot; L' + &mu;<sub>d</sub>&sup2; &middot; &sigma;<sub>L'</sub>&sup2; )
+                </div>
+                <div class="formula-legend">
+                  <div class="formula-legend-item"><strong>SS</strong> = Safety Stock (units)</div>
+                  <div class="formula-legend-item"><strong>z'</strong> = Adjusted service factor (includes risk signals)</div>
+                  <div class="formula-legend-item"><strong>σ_d</strong> = Demand standard deviation</div>
+                  <div class="formula-legend-item"><strong>L'</strong> = Adjusted lead time (days)</div>
+                  <div class="formula-legend-item"><strong>μ_d</strong> = Average daily demand</div>
+                  <div class="formula-legend-item"><strong>σ_L'</strong> = Lead time standard deviation</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================== -->
+        <!-- PAGE: WHAT-IF SIMULATOR -->
+        <!-- ============================== -->
+        <section class="page" id="page-simulator" data-page="simulator" aria-label="What-if simulator">
+          <div class="page-header">
+            <h2 class="page-title"><i class="fas fa-sliders"></i> What-If Simulator</h2>
+            <p class="page-subtitle">Adjust parameters in real-time and see how safety stock changes instantly</p>
+          </div>
+
+          <div class="grid-2col">
+            <!-- Simulator Controls -->
+            <div class="card" data-aos="fade-up">
+              <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-gamepad"></i> Simulation Controls</h3>
+              </div>
+              <div class="card-body">
+                <div class="form-group">
+                  <label class="form-label" for="simSku">SKU</label>
+                  <select id="simSku" class="form-select" aria-label="Select SKU for simulation">
+                    <option value="">— Upload data first —</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="simMuD">μ_d (Avg Daily Demand)</label>
+                  <input type="number" id="simMuD" class="form-input" min="0" step="0.1" value="100" aria-label="Average daily demand">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="simSigmaD">σ_d (Demand Std Dev)</label>
+                  <input type="number" id="simSigmaD" class="form-input" min="0" step="0.1" value="20" aria-label="Demand standard deviation">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="simLeadTime">L' (Lead Time, days)</label>
+                  <div class="slider-group">
+                    <input type="range" id="simLeadTime" class="range-slider" min="1" max="90" value="14" aria-label="Lead time in days">
+                    <span class="slider-value" id="simLeadTimeVal">14</span>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="simSigmaL">σ_L' (Lead Time Std Dev)</label>
+                  <div class="slider-group">
+                    <input type="range" id="simSigmaL" class="range-slider" min="0" max="30" value="3" step="0.5" aria-label="Lead time standard deviation">
+                    <span class="slider-value" id="simSigmaLVal">3.0</span>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="simZ">z' (Service Factor)</label>
+                  <div class="slider-group">
+                    <input type="range" id="simZ" class="range-slider" min="100" max="300" value="165" aria-label="Service factor z">
+                    <span class="slider-value" id="simZVal">1.65</span>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="simCongestion">Port Congestion Override</label>
+                  <div class="slider-group">
+                    <input type="range" id="simCongestion" class="range-slider" min="0" max="100" value="30" aria-label="Port congestion override">
+                    <span class="slider-value" id="simCongestionVal">30</span>
+                  </div>
+                </div>
+                <button type="button" class="btn btn-ghost btn-sm btn-block" id="simResetBtn">
+                  <i class="fas fa-rotate-left"></i> Reset to Defaults
+                </button>
+              </div>
+            </div>
+
+            <!-- Simulator Results -->
+            <div class="card" data-aos="fade-up" data-aos-delay="100">
+              <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-gauge"></i> Simulation Output</h3>
+              </div>
+              <div class="card-body">
+                <div class="sim-result-hero">
+                  <div class="sim-result-label">Computed Safety Stock</div>
+                  <div class="sim-result-value" id="simSSResult">0</div>
+                  <div class="sim-result-unit">units</div>
+                </div>
+                <div class="sim-breakdown">
+                  <h4 class="sim-breakdown-title">Calculation Breakdown</h4>
+                  <div class="sim-breakdown-row">
+                    <span>σ_d² × L'</span>
+                    <span id="simTermA">0</span>
+                  </div>
+                  <div class="sim-breakdown-row">
+                    <span>μ_d² × σ_L'²</span>
+                    <span id="simTermB">0</span>
+                  </div>
+                  <div class="sim-breakdown-row">
+                    <span>√(Term A + Term B)</span>
+                    <span id="simSqrt">0</span>
+                  </div>
+                  <div class="sim-breakdown-row sim-breakdown-row--final">
+                    <span>z' × √(...)</span>
+                    <span id="simFinal">0</span>
+                  </div>
+                </div>
+                <div class="chart-container chart-container--sm">
+                  <canvas id="simSensitivityChart" aria-label="Sensitivity analysis chart"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================== -->
+        <!-- PAGE: MULTI-LOCATION REBALANCER -->
+        <!-- ============================== -->
+        <section class="page" id="page-rebalancer" data-page="rebalancer" aria-label="Multi-location rebalancer">
+          <div class="page-header">
+            <h2 class="page-title"><i class="fas fa-arrows-split-up-and-left"></i> Multi-Location Rebalancer</h2>
+            <p class="page-subtitle">Optimize inventory allocation across warehouses to minimize total cost while maintaining service levels</p>
+          </div>
+
+          <!-- Warehouse Config -->
+          <div class="card" data-aos="fade-up">
+            <div class="card-header">
+              <h3 class="card-title"><i class="fas fa-warehouse"></i> Warehouse Configuration</h3>
+              <div class="card-actions">
+                <button type="button" class="btn btn-sm btn-primary" id="addWarehouseBtn">
+                  <i class="fas fa-plus"></i> Add Warehouse
+                </button>
+              </div>
+            </div>
+            <div class="card-body card-body--table">
+              <div class="table-responsive">
+                <table class="data-table" id="warehouseTable" aria-label="Warehouse configuration">
+                  <thead>
+                    <tr>
+                      <th scope="col">Warehouse ID</th>
+                      <th scope="col">Name</th>
+                      <th scope="col">Region</th>
+                      <th scope="col">Current Inventory</th>
+                      <th scope="col">Safety Stock</th>
+                      <th scope="col">Capacity</th>
+                      <th scope="col">Unit Transfer Cost</th>
+                      <th scope="col">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="warehouseTableBody">
+                    <!-- Dynamic rows -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Rebalance Results -->
+          <div class="card" data-aos="fade-up">
+            <div class="card-header">
+              <h3 class="card-title"><i class="fas fa-scale-balanced"></i> Rebalance Plan</h3>
+              <div class="card-actions">
+                <button type="button" class="btn btn-sm btn-primary" id="runRebalanceBtn">
+                  <i class="fas fa-play"></i> Compute Rebalance
+                </button>
+                <button type="button" class="btn btn-sm btn-ghost" id="exportRebalanceBtn" disabled aria-label="Export rebalance plan">
+                  <i class="fas fa-download"></i> Export
+                </button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="empty-state" id="rebalanceEmptyState">
+                <div class="empty-icon"><i class="fas fa-truck-ramp-box"></i></div>
+                <h4>No Rebalance Plan Generated</h4>
+                <p>Add warehouses and run the rebalancer</p>
+              </div>
+              <div class="rebalance-results hidden" id="rebalanceResults">
+                <div class="kpi-row kpi-row--3">
+                  <div class="kpi-card kpi-card--compact">
+                    <p class="kpi-label">Total Transfers</p>
+                    <h3 class="kpi-value" id="rebalTransfers">0</h3>
+                  </div>
+                  <div class="kpi-card kpi-card--compact">
+                    <p class="kpi-label">Total Transfer Cost</p>
+                    <h3 class="kpi-value" id="rebalCost">$0</h3>
+                  </div>
+                  <div class="kpi-card kpi-card--compact">
+                    <p class="kpi-label">Inventory Saved</p>
+                    <h3 class="kpi-value" id="rebalSaved">0 units</h3>
+                  </div>
+                </div>
+                <div class="table-responsive">
+                  <table class="data-table" id="rebalanceTable" aria-label="Transfer plan">
+                    <thead>
+                      <tr>
+                        <th scope="col">From</th>
+                        <th scope="col">To</th>
+                        <th scope="col">Units</th>
+                        <th scope="col">Cost</th>
+                        <th scope="col">Reason</th>
+                      </tr>
+                    </thead>
+                    <tbody id="rebalanceTableBody">
+                      <!-- Dynamic rows -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================== -->
+        <!-- PAGE: ERP INTEGRATION -->
+        <!-- ============================== -->
+        <section class="page" id="page-erp" data-page="erp" aria-label="ERP integration">
+          <div class="page-header">
+            <h2 class="page-title"><i class="fas fa-plug"></i> ERP Integration</h2>
+            <p class="page-subtitle">Connect to your ERP system to fetch inventory and push approved safety stock updates</p>
+          </div>
+
+          <div class="grid-2col">
+            <!-- Connection Status -->
+            <div class="card" data-aos="fade-up">
+              <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-link"></i> Connection Status</h3>
+              </div>
+              <div class="card-body">
+                <div class="erp-status">
+                  <div class="erp-status-icon" id="erpStatusIcon">
+                    <i class="fas fa-plug-circle-xmark"></i>
+                  </div>
+                  <h4 class="erp-status-text" id="erpStatusText">Not Connected</h4>
+                  <p class="erp-status-sub" id="erpStatusSub">Configure your ERP connection below</p>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="erpType">ERP System</label>
+                  <select id="erpType" class="form-select" aria-label="ERP system type">
+                    <option value="">Select ERP...</option>
+                    <option value="sap">SAP S/4HANA</option>
+                    <option value="oracle">Oracle NetSuite</option>
+                    <option value="dynamics">Microsoft Dynamics 365</option>
+                    <option value="sage">Sage X3</option>
+                    <option value="custom">Custom REST API</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="erpEndpoint">API Endpoint URL</label>
+                  <input type="url" id="erpEndpoint" class="form-input" placeholder="https://your-erp.com/api/v1" aria-label="ERP API endpoint">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="erpApiKey">API Key / Token</label>
+                  <div class="input-with-action">
+                    <input type="password" id="erpApiKey" class="form-input" placeholder="••••••••••••••••" aria-label="ERP API key">
+                    <button type="button" class="btn-icon" id="toggleErpKeyVisibility" aria-label="Toggle key visibility">
+                      <i class="fas fa-eye"></i>
+                    </button>
+                  </div>
+                </div>
+                <button type="button" class="btn btn-primary btn-block" id="testErpConnectionBtn">
+                  <i class="fas fa-plug"></i> Test Connection
+                </button>
+              </div>
+            </div>
+
+            <!-- Push Queue -->
+            <div class="card" data-aos="fade-up" data-aos-delay="100">
+              <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-paper-plane"></i> Push Queue</h3>
+              </div>
+              <div class="card-body">
+                <div class="empty-state" id="pushQueueEmpty">
+                  <div class="empty-icon"><i class="fas fa-inbox"></i></div>
+                  <h4>No Pending Pushes</h4>
+                  <p>Approve recommendations to add them to the push queue</p>
+                </div>
+                <div class="push-queue hidden" id="pushQueueList" role="list" aria-label="ERP push queue">
+                  <!-- Dynamic items -->
+                </div>
+                <button type="button" class="btn btn-primary btn-block hidden" id="pushToErpBtn">
+                  <i class="fas fa-paper-plane"></i> Push All to ERP
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================== -->
+        <!-- PAGE: AUDIT TRAIL -->
+        <!-- ============================== -->
+        <section class="page" id="page-audit" data-page="audit" aria-label="Audit trail">
+          <div class="page-header">
+            <h2 class="page-title"><i class="fas fa-scroll"></i> Audit Trail &amp; Explainability</h2>
+            <p class="page-subtitle">Every recommendation is traceable — view inputs, signals, and parameters that produced each decision</p>
+          </div>
+
+          <div class="card" data-aos="fade-up">
+            <div class="card-header">
+              <h3 class="card-title"><i class="fas fa-clock-rotate-left"></i> Audit Log</h3>
+              <div class="card-actions">
+                <input type="search" id="auditSearchInput" class="search-input search-input--sm" placeholder="Search audit log..." aria-label="Search audit log">
+                <button type="button" class="btn btn-sm btn-ghost" id="exportAuditBtn" aria-label="Export audit log">
+                  <i class="fas fa-download"></i> Export
+                </button>
+                <button type="button" class="btn btn-sm btn-ghost" id="clearAuditBtn" aria-label="Clear audit log">
+                  <i class="fas fa-trash"></i> Clear
+                </button>
+              </div>
+            </div>
+            <div class="card-body card-body--table">
+              <div class="table-responsive">
+                <div class="empty-state" id="auditEmptyState">
+                  <div class="empty-icon"><i class="fas fa-scroll"></i></div>
+                  <h4>No Audit Entries Yet</h4>
+                  <p>Actions will be logged automatically as you use the system</p>
+                </div>
+                <table class="data-table hidden" id="auditTable" aria-label="Audit trail log">
+                  <thead>
+                    <tr>
+                      <th scope="col">Timestamp</th>
+                      <th scope="col">Action</th>
+                      <th scope="col">SKU</th>
+                      <th scope="col">User</th>
+                      <th scope="col">Details</th>
+                      <th scope="col">Explain</th>
+                    </tr>
+                  </thead>
+                  <tbody id="auditTableBody">
+                    <!-- Dynamic rows -->
+                  </tbody>
+                </table>
+              </div>
+              <div class="pagination hidden" id="auditPagination" aria-label="Audit log pagination">
+                <button type="button" class="btn btn-sm btn-ghost" id="auditPagePrev" aria-label="Previous page"><i class="fas fa-chevron-left"></i></button>
+                <span class="pagination-info" id="auditPageInfo">Page 1 of 1</span>
+                <button type="button" class="btn btn-sm btn-ghost" id="auditPageNext" aria-label="Next page"><i class="fas fa-chevron-right"></i></button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================== -->
+        <!-- PAGE: ALERTS -->
+        <!-- ============================== -->
+        <section class="page" id="page-alerts" data-page="alerts" aria-label="Alerts and approvals">
+          <div class="page-header">
+            <h2 class="page-title"><i class="fas fa-bell"></i> Alerts &amp; Approval Workflow</h2>
+            <p class="page-subtitle">Review system alerts, approve high-impact changes, and configure notification preferences</p>
+          </div>
+
+          <!-- Alert Stats -->
+          <div class="kpi-row kpi-row--3">
+            <div class="kpi-card" data-aos="fade-up">
+              <div class="kpi-icon kpi-icon--red">
+                <i class="fas fa-circle-exclamation"></i>
+              </div>
+              <div class="kpi-body">
+                <p class="kpi-label">Critical Alerts</p>
+                <h3 class="kpi-value" id="kpiCriticalAlerts">0</h3>
+              </div>
+            </div>
+            <div class="kpi-card" data-aos="fade-up" data-aos-delay="100">
+              <div class="kpi-icon kpi-icon--amber">
+                <i class="fas fa-clock"></i>
+              </div>
+              <div class="kpi-body">
+                <p class="kpi-label">Pending Approvals</p>
+                <h3 class="kpi-value" id="kpiPendingApprovals">0</h3>
+              </div>
+            </div>
+            <div class="kpi-card" data-aos="fade-up" data-aos-delay="200">
+              <div class="kpi-icon kpi-icon--green">
+                <i class="fas fa-circle-check"></i>
+              </div>
+              <div class="kpi-body">
+                <p class="kpi-label">Resolved Today</p>
+                <h3 class="kpi-value" id="kpiResolvedToday">0</h3>
+              </div>
+            </div>
+          </div>
+
+          <!-- Alerts List -->
+          <div class="card" data-aos="fade-up">
+            <div class="card-header">
+              <h3 class="card-title"><i class="fas fa-list"></i> Alert Feed</h3>
+              <div class="card-actions">
+                <select id="alertTypeFilter" class="select-sm" aria-label="Filter alerts by type">
+                  <option value="all">All Types</option>
+                  <option value="critical">Critical</option>
+                  <option value="warning">Warning</option>
+                  <option value="info">Info</option>
+                  <option value="approval">Approval</option>
+                </select>
+                <button type="button" class="btn btn-sm btn-ghost" id="markAllReadBtn" aria-label="Mark all as read">
+                  <i class="fas fa-check-double"></i> Mark All Read
+                </button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="empty-state" id="alertsEmptyState">
+                <div class="empty-icon"><i class="fas fa-bell-slash"></i></div>
+                <h4>No Alerts</h4>
+                <p>System alerts will appear here</p>
+              </div>
+              <div class="alert-feed" id="alertFeed" role="list" aria-label="Alert feed">
+                <!-- Dynamic alert items -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div><!-- /pageContainer -->
+
+    </main><!-- /mainContent -->
+
+  </div><!-- /appWrapper -->
+
+  <!-- ============================================ -->
+  <!-- MODAL: EXPLAIN PANEL -->
+  <!-- ============================================ -->
+  <div class="modal-overlay hidden" id="explainModal" role="dialog" aria-modal="true" aria-label="Recommendation explainability">
+    <div class="modal-card modal-card--lg">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fas fa-magnifying-glass-chart"></i> Recommendation Explainability</h3>
+        <button type="button" class="modal-close" id="explainModalClose" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-body" id="explainModalBody">
+        <!-- Dynamic explain content -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" id="explainModalDone">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- MODAL: SETTINGS -->
+  <!-- ============================================ -->
+  <div class="modal-overlay hidden" id="settingsModal" role="dialog" aria-modal="true" aria-label="Application settings">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fas fa-gear"></i> Settings</h3>
+        <button type="button" class="modal-close" id="settingsModalClose" aria-label="Close settings">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Theme</label>
+          <div class="toggle-group">
+            <button type="button" class="toggle-btn active" data-theme-option="dark" aria-label="Dark theme"><i class="fas fa-moon"></i> Dark</button>
+            <button type="button" class="toggle-btn" data-theme-option="light" aria-label="Light theme"><i class="fas fa-sun"></i> Light</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="settingFontSize">Font Size</label>
+          <select id="settingFontSize" class="form-select" aria-label="Font size">
+            <option value="14">Small (14px)</option>
+            <option value="16" selected>Medium (16px)</option>
+            <option value="18">Large (18px)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="settingCurrency">Currency</label>
+          <select id="settingCurrency" class="form-select" aria-label="Currency">
+            <option value="USD" selected>USD ($)</option>
+            <option value="EUR">EUR (€)</option>
+            <option value="GBP">GBP (£)</option>
+            <option value="INR">INR (₹)</option>
+            <option value="JPY">JPY (¥)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Data Management</label>
+          <div class="btn-group-vertical">
+            <button type="button" class="btn btn-secondary btn-sm" id="exportAllDataBtn">
+              <i class="fas fa-download"></i> Export All Data (JSON)
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm" id="importDataBtn">
+              <i class="fas fa-upload"></i> Import Data (JSON)
+            </button>
+            <input type="file" id="importDataFileInput" accept=".json" class="hidden" aria-hidden="true">
+            <button type="button" class="btn btn-danger btn-sm" id="clearAllDataBtn">
+              <i class="fas fa-trash"></i> Clear All Data
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="saveSettingsBtn">Save Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- MODAL: ADD/EDIT WAREHOUSE -->
+  <!-- ============================================ -->
+  <div class="modal-overlay hidden" id="warehouseModal" role="dialog" aria-modal="true" aria-label="Add or edit warehouse">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title" id="warehouseModalTitle"><i class="fas fa-warehouse"></i> Add Warehouse</h3>
+        <button type="button" class="modal-close" id="warehouseModalClose" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="warehouseForm" novalidate>
+          <input type="hidden" id="whEditId">
+          <div class="form-group">
+            <label class="form-label" for="whName">Warehouse Name *</label>
+            <input type="text" id="whName" class="form-input" placeholder="e.g., Chicago DC" required aria-label="Warehouse name" maxlength="100">
+            <span class="form-error hidden" id="whNameError">Name is required</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="whRegion">Region *</label>
+            <select id="whRegion" class="form-select" required aria-label="Region">
+              <option value="">Select region...</option>
+              <option value="North America">North America</option>
+              <option value="Europe">Europe</option>
+              <option value="Asia Pacific">Asia Pacific</option>
+              <option value="Latin America">Latin America</option>
+              <option value="Middle East">Middle East</option>
+              <option value="Africa">Africa</option>
+            </select>
+            <span class="form-error hidden" id="whRegionError">Region is required</span>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="whCurrentInv">Current Inventory</label>
+              <input type="number" id="whCurrentInv" class="form-input" min="0" value="0" aria-label="Current inventory">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="whSafetyStock">Safety Stock</label>
+              <input type="number" id="whSafetyStock" class="form-input" min="0" value="0" aria-label="Safety stock">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="whCapacity">Max Capacity</label>
+              <input type="number" id="whCapacity" class="form-input" min="0" value="10000" aria-label="Max capacity">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="whTransferCost">Unit Transfer Cost ($)</label>
+              <input type="number" id="whTransferCost" class="form-input" min="0" step="0.01" value="2.50" aria-label="Unit transfer cost">
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" id="warehouseModalCancel">Cancel</button>
+        <button type="button" class="btn btn-primary" id="warehouseModalSave">
+          <i class="fas fa-save"></i> Save Warehouse
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- MODAL: CONFIRM -->
+  <!-- ============================================ -->
+  <div class="modal-overlay hidden" id="confirmModal" role="alertdialog" aria-modal="true" aria-label="Confirmation dialog">
+    <div class="modal-card modal-card--sm">
+      <div class="modal-header">
+        <h3 class="modal-title" id="confirmModalTitle">Confirm Action</h3>
+        <button type="button" class="modal-close" id="confirmModalClose" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="confirmModalMessage">Are you sure you want to proceed?</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" id="confirmModalCancel">Cancel</button>
+        <button type="button" class="btn btn-danger" id="confirmModalOk">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- GLOBAL SEARCH RESULTS OVERLAY -->
+  <!-- ============================================ -->
+  <div class="search-overlay hidden" id="searchOverlay" role="dialog" aria-label="Search results">
+    <div class="search-results-card">
+      <div class="search-results-header">
+        <h4>Search Results</h4>
+        <button type="button" class="modal-close" id="searchOverlayClose" aria-label="Close search">&times;</button>
+      </div>
+      <div class="search-results-body" id="searchResultsBody">
+        <div class="empty-state">
+          <div class="empty-icon"><i class="fas fa-search"></i></div>
+          <p>Type to search SKUs, locations, or actions...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- MOBILE SIDEBAR OVERLAY -->
+  <!-- ============================================ -->
+  <div class="mobile-overlay hidden" id="mobileOverlay"></div>
+
+  <!-- ============================================ -->
+  <!-- KEYBOARD SHORTCUTS HELP -->
+  <!-- ============================================ -->
+  <div class="modal-overlay hidden" id="helpModal" role="dialog" aria-modal="true" aria-label="Help and keyboard shortcuts">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fas fa-keyboard"></i> Keyboard Shortcuts</h3>
+        <button type="button" class="modal-close" id="helpModalClose" aria-label="Close help">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="shortcuts-list">
+          <div class="shortcut-item">
+            <kbd>Ctrl</kbd> + <kbd>K</kbd>
+            <span>Global Search</span>
+          </div>
+          <div class="shortcut-item">
+            <kbd>Ctrl</kbd> + <kbd>D</kbd>
+            <span>Toggle Dark/Light Theme</span>
+          </div>
+          <div class="shortcut-item">
+            <kbd>Ctrl</kbd> + <kbd>S</kbd>
+            <span>Save / Export Data</span>
+          </div>
+          <div class="shortcut-item">
+            <kbd>Esc</kbd>
+            <span>Close Modal / Overlay</span>
+          </div>
+          <div class="shortcut-item">
+            <kbd>1</kbd> – <kbd>9</kbd>
+            <span>Navigate Pages (when no input focused)</span>
+          </div>
+          <div class="shortcut-item">
+            <kbd>?</kbd>
+            <span>Show This Help</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="helpModalDone">Got it!</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- SCRIPTS -->
+  <!-- ============================================ -->
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <!-- SheetJS (for CSV/Excel export) -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <!-- jsPDF (for PDF export) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <!-- Main App Script -->
+  <script src="script.js"></script>
+</body>
 </html>
