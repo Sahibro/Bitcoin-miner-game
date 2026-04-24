@@ -1,0 +1,50 @@
+{
+  "name": "SupplyChain SafeStock AI",
+  "short_name": "SafeStock AI",
+  "description": "Enterprise-grade safety stock optimization platform with AI-driven demand forecasting, real-time risk signals, multi-location rebalancing, and ERP integration.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0B1120",
+  "theme_color": "#0F172A",
+  "orientation": "any",
+  "scope": "./",
+  "lang": "en",
+  "categories": ["business", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='96' fill='%233B82F6'/><text x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-size='280' font-family='Arial'>📦</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "url": "./index.html#dashboard",
+      "description": "View KPIs and overview"
+    },
+    {
+      "name": "Upload Data",
+      "short_name": "Upload",
+      "url": "./index.html#upload",
+      "description": "Upload demand CSV data"
+    },
+    {
+      "name": "What-If Simulator",
+      "short_name": "Simulator",
+      "url": "./index.html#simulator",
+      "description": "Run what-if simulations"
+    },
+    {
+      "name": "Recommendations",
+      "short_name": "Recs",
+      "url": "./index.html#recommendations",
+      "description": "View safety stock recommendations"
+    }
+  ]
+}
