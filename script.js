@@ -2731,7 +2731,7 @@ const UIDashboard = {
         <tr>
           <td colspan="8" style="text-align:center; padding:2rem; color:var(--color-text-muted);">
             No recommendations yet. Upload data and compute recommendations.          
-            </td>
+          </td>
         </tr>
       `;
       return;
